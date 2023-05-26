@@ -1,11 +1,15 @@
 package main // Se llama el paquete main
 
 import (
-	"fmt"
+
 	// Se importa el paquete fmt el cual implementa funciones de entrada y salida
+
 	"math"
+
 	// Se importa el paquete math el cual implementa funciones matematicos como trigonométricas,
 	// exponenciales y logarítmicas. Raices complejas
+	"log"
+	"net/http"
 )
 
 /*
@@ -91,7 +95,7 @@ func obtFase(x complex64) float32 {
 	return float32(math.Atan2(float64(imag(x)), float64(real(x))))
 }
 
-func main() {
+/*func helloHandler(w http.ResponseWriter, r *http.Request) {
 	x := []complex64{complex(0, 0), complex(1, 0), complex(2, 0), complex(3, 0), complex(4, 0), complex(5, 0), complex(6, 0), complex(7, 0)}
 	resultado := transformadaF(x...)
 	fmt.Println(resultado)
@@ -102,12 +106,38 @@ func main() {
 		fmt.Printf("Magnitud: %f, Fase: %f\n", magnitud, fase)
 	}
 
-	json := make([]map[string]float32, len(resultado))
+	jsonData := make([]map[string]float32, len(resultado))
 	for i, result := range resultado {
 		magnitud := obtMagnitud(result)
 		fase := obtFase(result)
-		json[i] = map[string]float32{"mag": magnitud, "fase": fase}
+		jsonData[i] = map[string]float32{"mag": magnitud, "fase": fase}
 	}
-	fmt.Println(json)
 
+	jsonBytes, err := json.Marshal(jsonData)
+	if err != nil {
+		log.Println("Error al convertir a JSON:", err)
+		http.Error(w, "Error interno del servidor", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonBytes)
+}*/
+
+func main() {
+	// Configurar el manejador para los archivos estáticos
+	fs := http.FileServer(http.Dir("."))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// Configurar el manejador para la página principal
+	http.HandleFunc("/", homeHandler)
+
+	// Iniciar el servidor en el puerto 8080
+	log.Println("Servidor escuchando en el puerto 8080...")
+	log.Fatal(http.ListenAndServe(":8004", nil))
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// Aquí
+	http.ServeFile(w, r, "index.html")
 }
